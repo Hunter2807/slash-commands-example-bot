@@ -1,4 +1,5 @@
 import asyncio
+import async_google_trans_new
 import discord, os
 from discord.ext import commands
 from dislash import (
@@ -22,6 +23,7 @@ from pagination import *
 client = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 inter_client = InteractionClient(client)
 token = str(os.environ.get('bot_token'))
+translator = async_google_trans_new.AsyncTranslator()
 
 
 #--------------------------+
@@ -46,7 +48,20 @@ async def hello(ctx):
 async def secret(ctx):
     await ctx.reply("Confidential message 😓😲😔🥱😒😖", ephemeral=True)
 
-
+@inter_client.slash_command(
+    description="Translates text to any language (from Russian to English by default)",
+    options=[
+    Option("language", "The language to translate to", OptionType.STRING)
+    Option("text", "The text to translate", OptionType.STRING, True),
+    ]
+)
+async def translate(
+    inter: SlashInteraction,
+    language: str = "ru",
+    text: str
+):
+    translated_text = await translator.translate(text, language)
+    await ctx.send(f"{text} --> {translated_text}")
 @inter_client.slash_command(
     description="Creates an embed",
     options=[
